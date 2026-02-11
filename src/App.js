@@ -30,6 +30,7 @@ function Portfolio() {
             <p className="hero-description">3 Years of End-to-End Web Development Experience</p>
             <div className="hero-buttons">
               <a href="#contact" className="btn btn-primary">Get In Touch</a>
+              <a href={`${process.env.PUBLIC_URL}/Jayvee Olla CV.pdf`} download className="btn btn-secondary">📄 Download Resume</a>
               <Link to="/" className="btn btn-secondary">🎨 View 3D Workspace</Link>
             </div>
           </div>
