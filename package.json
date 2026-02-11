@@ -1,7 +1,7 @@
 {
   "name": "portfolio-react",
   "version": "0.1.0",
-  "homepage": "https://jayveeolla.github.io/portfolio",
+  "homepage": "https://jayveeolla.github.io",
   "private": true,
   "dependencies": {
     "@react-three/drei": "^10.7.7",
