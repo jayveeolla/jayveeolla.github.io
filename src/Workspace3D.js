@@ -108,6 +108,99 @@ function Chair() {
 
 function Monitor({ onClick }) {
   const [hovered, setHovered] = useState(false);
+  const textureRef = useRef();
+  const scrollOffset = useRef(0);
+  
+  // Create canvas once
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  useFrame(() => {
+    if (textureRef.current && ctx) {
+      // Auto-scroll animation
+      scrollOffset.current += 0.3;
+      if (scrollOffset.current > 600) {
+        scrollOffset.current = 0;
+      }
+      
+      // Clear canvas
+      ctx.fillStyle = '#0f0f1e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw resume content
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 36px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Jayvee Olla', canvas.width / 2, 80 - scrollOffset.current);
+      
+      // Gradient line
+      const gradient = ctx.createLinearGradient(150, 0, 362, 0);
+      gradient.addColorStop(0, '#6366f1');
+      gradient.addColorStop(1, '#ec4899');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(150, 100 - scrollOffset.current, 212, 4);
+      
+      // Title
+      ctx.fillStyle = '#a0a0b0';
+      ctx.font = '22px Arial, sans-serif';
+      ctx.fillText('Full Stack Developer', canvas.width / 2, 140 - scrollOffset.current);
+      
+      // Section: Skills
+      ctx.fillStyle = '#6366f1';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Skills', 40, 210 - scrollOffset.current);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '18px Arial, sans-serif';
+      ctx.fillText('• React.js & Next.js', 50, 245 - scrollOffset.current);
+      ctx.fillText('• Node.js & Express', 50, 275 - scrollOffset.current);
+      ctx.fillText('• Python & TensorFlow', 50, 305 - scrollOffset.current);
+      ctx.fillText('• MongoDB & PostgreSQL', 50, 335 - scrollOffset.current);
+      
+      // Section: Experience
+      ctx.fillStyle = '#6366f1';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.fillText('Experience', 40, 395 - scrollOffset.current);
+      
+      ctx.fillStyle = '#ec4899';
+      ctx.font = 'bold 20px Arial, sans-serif';
+      ctx.fillText('Full Stack Developer', 50, 430 - scrollOffset.current);
+      
+      ctx.fillStyle = '#a0a0b0';
+      ctx.font = '16px Arial, sans-serif';
+      ctx.fillText('Tech Company • 2022 - Present', 50, 455 - scrollOffset.current);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '18px Arial, sans-serif';
+      ctx.fillText('• Built scalable web apps', 60, 485 - scrollOffset.current);
+      ctx.fillText('• Led team of 5 developers', 60, 515 - scrollOffset.current);
+      
+      // Section: Projects
+      ctx.fillStyle = '#6366f1';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.fillText('Projects', 40, 575 - scrollOffset.current);
+      
+      ctx.fillStyle = '#ec4899';
+      ctx.font = 'bold 20px Arial, sans-serif';
+      ctx.fillText('Face Recognition', 50, 610 - scrollOffset.current);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '18px Arial, sans-serif';
+      ctx.fillText('AI-powered recognition', 60, 640 - scrollOffset.current);
+      
+      // Click instruction
+      ctx.fillStyle = '#6366f1';
+      ctx.font = 'bold 20px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('👆 Click to View Portfolio', canvas.width / 2, 700 - scrollOffset.current);
+      
+      // Update texture
+      textureRef.current.needsUpdate = true;
+    }
+  });
 
   return (
     <group>
@@ -117,28 +210,32 @@ function Monitor({ onClick }) {
         <meshStandardMaterial color="#1a1a2e" roughness={0.1} metalness={0.8} />
       </mesh>
       
-      {/* Screen */}
+      {/* Invisible larger clickable area */}
       <mesh 
-        position={[0, 2.5, -0.74]} 
+        position={[0, 2.5, -0.75]} 
         onClick={onClick}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
       >
-        <planeGeometry args={[1.85, 1.15]} />
-        <meshBasicMaterial color={hovered ? "#7c3aed" : "#6366f1"} />
-        <Html center>
-          <div style={{
-            color: 'white',
-            fontSize: '12px',
-            textAlign: 'center',
-            pointerEvents: 'none',
-            width: '200px'
-          }}>
-            <div>Click to view</div>
-            <div>Portfolio</div>
-          </div>
-        </Html>
+        <planeGeometry args={[2.2, 1.5]} />
+        <meshBasicMaterial transparent opacity={0} />
       </mesh>
+      
+      {/* Screen with canvas texture */}
+      <mesh position={[0, 2.5, -0.74]}>
+        <planeGeometry args={[1.85, 1.15]} />
+        <meshBasicMaterial>
+          <canvasTexture ref={textureRef} attach="map" image={canvas} />
+        </meshBasicMaterial>
+      </mesh>
+      
+      {/* Hover glow effect */}
+      {hovered && (
+        <mesh position={[0, 2.5, -0.73]}>
+          <planeGeometry args={[1.9, 1.2]} />
+          <meshBasicMaterial color="#6366f1" transparent opacity={0.2} />
+        </mesh>
+      )}
       
       {/* Stand */}
       <mesh position={[0, 1.77, -0.8]} castShadow>
@@ -215,17 +312,31 @@ function Scene() {
 }
 
 export default function Workspace3D() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  const cameraPosition = isMobile ? [4, 4, 7] : [3, 3, 5];
+  const cameraFov = isMobile ? 85 : 75;
+  
   return (
     <div className="workspace-3d-container">
       <div className="workspace-info">
         🖥️ Click on the Monitor Screen to go back to Portfolio 🖥️
       </div>
       <div className="workspace-controls">
-        🖱️ Drag to rotate • Scroll to zoom • Right-click drag to pan
+        {isMobile ? '👆 Drag to rotate • Pinch to zoom' : '🖱️ Drag to rotate • Scroll to zoom • Right-click drag to pan'}
       </div>
       
       <Canvas
-        camera={{ position: [3, 3, 5], fov: 75 }}
+        camera={{ position: cameraPosition, fov: cameraFov }}
         shadows
         style={{ background: '#0f0f1e' }}
       >
